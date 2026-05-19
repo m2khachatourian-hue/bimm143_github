@@ -1,0 +1,293 @@
+---
+title: "Class 11: Alphafold"
+author: "Mayla (19136116)"
+format: pdf
+---
+
+```{r}
+library(bio3d)
+
+pdbfiles <- list.files("hivpr_dimer_94b5b.result", 
+                       pattern = "\\.pdb$", 
+                       recursive = TRUE,
+                       full.names = TRUE)
+pdbfiles
+```
+```{r}
+pdb <- read.pdb(pdbfiles[1])
+pdb
+```
+
+```{r}
+head(pdb$atom)
+```
+
+```{r}
+plot(pdb$atom$b,
+     type = "l",
+     xlab = "Atom index",
+     ylab = "pLDDT score")
+```
+```{r}
+table(pdb$atom$chain)
+boxplot(pdb$atom$b ~ pdb$atom$chain,
+        xlab = "Chain", 
+        ylab = "pLDDT score")
+```
+
+```{r}
+ca.inds <- atom.select(pdb, elety = "CA")
+
+ca.data <- pdb$atom[ca.inds$atom, ]
+
+plot(ca.data$resno,
+     ca.data$b,
+     type = "l",
+     xlab = "Residue number",
+     ylab = "pLDDT score")
+```
+The AlphaFold model has generally high confidence where pLDDT values are high. Lower pLDDT regions are less reliable and may correspond to flexible or disordered parts of the structure. The two chains can be compared using the boxplot to see whether one chain has lower confidence than the other.
+
+```{r}
+table(pdb$atom$chain)
+```
+
+```{r}
+boxplot(pdb$atom$b ~ pdb$atom$chain, 
+        xlab = "Chain",
+        ylab = "pLDDT score",
+        main = "pLDDT Scores by Chain")
+```
+The pLDDT scores compare AlphaFold confidence between the two chains. Higher pLDDT values indicate more reliable predicted regions, while lower values suggest less confident or more flexible regions.
+
+```{r}
+#library(NGLVieweR)
+
+#NGLVieweR(pdbfiles[1]) |>
+#  addRepresentation("cartoon")
+```
+```{r}
+#Change this for YOUR results dir name
+results_dir <- "hivpr_dimer_94b5b.result/"
+```
+```{r}
+files <- list.files(results_dir)
+files
+```
+```{r}
+scores_files <- list.files(
+  path = paste0(results_dir, files[1]),
+  pattern = "scores",
+  full.names = TRUE
+)
+scores_files
+```
+```{r}
+rid = "k1w3m8"
+
+library(jsonlite)
+scores <- lapply(scores_files, read_json)
+```
+
+```{r}
+rid="j8n2vp"
+
+names(scores)
+```
+
+```{r results='hide'}
+#| include: false
+rid="r4v7tx"
+
+scores[[1]]$plddt
+```
+
+```{r}
+rid="d9q7m"
+
+pae <- scores[[1]]$pae
+```
+
+```{r}
+library(bio3d)
+
+results_dir <- "hivpr_dimer_94b5b.result/"
+
+pdb.files <- list.files(path = results_dir,
+                        pattern = ".pdb",
+                        recursive = TRUE,
+                        full.names = TRUE)
+
+basename(pdb.files)
+```
+```{r}
+pdbs <- pdbaln(pdb.files, fit = TRUE, exefile = "msa")
+
+pdbs
+```
+
+```{r}
+rd <- rmsd(pdbs, fit = TRUE)
+
+range(rd)
+```
+```{r}
+library(pheatmap)
+
+colnames(rd) <- paste0("m", 1:5)
+rownames(rd) <- paste0("m", 1:5)
+
+pheatmap(rd)
+```
+```{r}
+pdb <- read.pdb("1hsg")
+
+plotb3(pdbs$b[1,], typ = "l", col = "red", sse = pdb)
+points(pdbs$b[2,], typ = "l", col = "blue")
+points(pdbs$b[3,], typ = "l", col = "green")
+points(pdbs$b[4,], typ = "l", col = "darkgreen")
+points(pdbs$b[5,], typ = "l", col = "orange")
+abline(v = 100, col = "gray")
+```
+
+```{r}
+core <- core.find(pdbs)
+```
+
+```{r}
+core.inds <- print(core, vol = 0.5)
+```
+
+```{r}
+xyz <- pdbfit(pdbs, core.inds, outpath = "corefit_structures")
+```
+
+```{r}
+rf <- rmsf(xyz)
+
+plotb3(rf, sse = pdb)
+abline(v = 100, col = "gray", ylab = "RMSF")
+```
+```{r}
+library(jsonlite)
+
+pae_files <- list.files(path = results_dir,
+                        pattern = "model.*\\.json",
+                        recursive = TRUE,
+                        full.names = TRUE)
+
+pae_files
+```
+
+```{r}
+pae1 <- read_json(pae_files[1], simplifyVector = TRUE)
+pae5 <- read_json(pae_files[5], simplifyVector = TRUE)
+
+attributes(pae1)
+```
+```{r}
+head(pae1$plddt)
+```
+```{r}
+pae1$max_pae
+pae5$max_pae
+```
+
+```{r}
+plot.dmat(pae1$pae,
+          xlab = "Residue Position (i)",
+          ylab = "Residue Position (j)")
+```
+
+```{r}
+plot.dmat(pae5$pae,
+          xlab = "Residue Position (i)",
+          ylab = "Residue Position (j)",
+          grid.col = "black",
+          zlim = c(0,30))
+```
+
+```{r}
+plot.dmat(pae1$pae,
+          xlab = "Residue Position (i)",
+          ylab = "Residue Position (j)",
+          grid.col = "black",
+          zlim = c(0,30))
+```
+
+```{r}
+aln_file <- list.files(path = results_dir,
+                       pattern = ".a3m$",
+                       full.names = TRUE)
+
+aln_file
+```
+
+```{r}
+aln_file <- list.files(path = results_dir,
+                       pattern = ".a3m$",
+                       recursive = TRUE,
+                       full.names = TRUE)
+
+aln_file
+```
+
+```{r}
+aln <- read.fasta(aln_file[1], to.upper = TRUE)
+```
+
+```{r}
+dim(aln$ali)
+```
+
+```{r}
+sim <- conserv(aln)
+```
+
+```{r}
+plotb3(sim[1:99],
+       sse = trim.pdb(pdb, chain = "A"),
+       ylab = "Conservation Score")
+```
+
+```{r}
+con <- consensus(aln, cutoff = 0.9)
+con$seq
+```
+
+```{r}
+m1.pdb <- read.pdb(pdb.files[1])
+
+occ <- vec2resno(c(sim[1:99]), m1.pdb$atom$resno)
+
+write.pdb(m1.pdb, o = occ, file = "m1_conserv.pdb")
+```
+
+```{r}
+getwd()
+```
+```{r}
+file.exists("m1_conserv.pdb")
+```
+```{r}
+write.pdb(m1.pdb, o = occ, file = "./m1_conserv.pdb")
+```
+
+```{r}
+list.files(pattern = "m1_conserv")
+```
+
+```{r}
+length(occ)
+nrow(m1.pdb$atom)
+```
+```{r}
+write.pdb(m1.pdb, o = occ, file = "m1_conserv.pdb")
+```
+```{r}
+list.files()
+```
+```{r}
+file.exists("m1_conserv.pdb")
+```
+The conservation analysis identifies highly conserved residues that may be structurally or functionally important in the HIV protease dimer.

@@ -1,0 +1,39 @@
+---
+title: 'Class 12: Hw'
+author: 'Mayla (PID: A19136116)'
+date: "2026-05-10"
+output: html_document
+---
+
+## Section 4: Population Scale Analysis [HOMEWORK] 
+One sample is obviously not enough to know what is happening in a population. You are interested in assessing genetic differences on a population scale. So, you processed about ~230 samples and did the normalization on a genome level. Now, you want to find whether there is any association of the 4 asthma-associated SNPs (rs8067378…) on ORMDL3 expression.
+
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+```
+
+```{r}
+nrow(expr)
+```
+
+```{r}
+table(expr$geno)
+```
+
+```{r}
+library(ggplot2)
+```
+
+Let's make a boxplot
+```{r}
+ggplot(expr) + aes(geno, exp, fill=geno) + 
+  geom_boxplot(notch=TRUE)
+```
+> Q13: Read this file into R and determine the sample size for each genotype and their corresponding median expression levels for each of these genotypes.
+
+The sample sizes and median expression values were calculated for each genotype group using R. The results showed differences in median ORMDL3 expression between genotypes, with the G/G group displaying the highest median expression level. These findings suggest a possible association between rs8067378 genotype and ORMDL3 expression.
+
+> Q14: Generate a boxplot with a box per genotype, what could you infer from the relative expression value between A/A and G/G displayed in this plot? Does the SNP effect the expression of ORMDL3? Hint: An example boxplot is provided overleaf – yours does not need to be as polished as this one. 
+
+The boxplot shows variation in ORMDL3 expression levels among the different rs8067378 genotypes. The G/G genotype appears to have higher median expression levels compared to the A/A genotype, while the heterozygous A/G group shows intermediate expression levels. This pattern suggests that the G allele may increase ORMDL3 expression. Since ORMDL3 has previously been associated with asthma susceptibility and immune responses, these results support the idea that this SNP could influence asthma risk by altering gene expression. However, there is still overlap between the groups, so additional statistical analysis would be needed to determine whether the differences are statistically significant.

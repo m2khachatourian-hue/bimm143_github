@@ -1,0 +1,240 @@
+---
+title: "Class 6: R Functions"
+author: "Mayla (PID: A19136116)"
+format: pdf
+toc: true
+---
+
+## Background
+
+All functions in R have at least 3 things:
+
+-   a *name* (we pick that and use it to call the function)
+-   input *arguments* (one or more comma separated inputs that go inside the brackets when we call the function)
+-   the *body* (the lines of R code that do the work of the function).
+
+## A first function
+
+Here we will create a function to add some numbers. Let's call it `add()`.
+
+Input arguments can be either **"required"** or **"optional"**. The later have fall-back default values that will be used if the user does not specify them.
+
+> Q1. Your first version of the function should add two input numbers together. For example, add (4, 7) should return 11.
+
+```{r}
+add <- function(x, y=0) {
+  x + y
+}
+```
+
+Can we use our new function:
+
+```{r}
+add(10, 100)
+```
+
+```{r}
+add(10)
+```
+
+> **Q1b.** For your second version, adapt your firsr function so that it can take a single input vector or two inputs as before. For example, add(4, 7) and add( c(4,7,10) ).
+
+```{r}
+add <- function(x, y=0) {
+  sum(x + y)
+}
+add(4, 7)
+```
+
+```{r}
+add(c(4, 7, 10))
+```
+
+> **Q1c.** Finally, on your own (outside of class) create a third version of your function that can add any number of inputs that the user provides. For example, add(1, 2, 3,-4) should return 2. Hint: explore the ... (dots) argument or the base R function sum().
+
+```{r}
+add <- function(x, y=0, z=0) { 
+  sum(x, y, z)
+}
+```
+
+```{r}
+add(10,100)
+```
+
+```{r}
+ans <- add (1, 2, 3)
+ans
+```
+
+We can explicity set a **return** alue output from a function (rather than the default last line) by using the `return()` function call.
+
+```{r}
+add <- function(x, y = 0, z=0) { 
+  return(sum(x, y, z))
+  cat("Is it break time yet?n")
+}
+```
+
+## A generate_dna() funciton
+
+A useful function here is the "base R" `sample()` function:
+
+```{r}
+sample(1:5, size=3)
+```
+
+We can use this to make a random nucelotide sequence if we draw from "A", "C", "G", and "T"...
+
+```{r}
+sample(1:5, size=60, replace = TRUE)
+```
+
+We can use this to make a random nucelotide sequence if we draw from "A", "C", "G", and "T"...
+
+```{r}
+sample(x=c("A", "C", "G", "T"), size= 10, replace = TRUE)
+```
+
+> **Q2a.** Write a function `generate_dna()` that returns a random DNA sequence of a length specified by the user. Your first version should return a multi-element vector of single character nucleotides. For example generate_dna(6) might return "A", "T", "T", "G", "A", "C". \[1 pt\]
+
+```{r}
+generate_dna <- function(len=10) {
+  sample(x=c("A", "C", "G", "T"), size= len, replace = TRUE)
+}
+```
+
+```{r}
+generate_dna()
+generate_dna(len=100)
+```
+
+> **Q2b.** Your second version should optionally be able to return either a multi-element vector of single character nucleotides (as before) or a **single character string** (not a vector of single letters but a singe vector of multiple letters). For example "AAGGCTG". \[1 pt\]
+
+```{r}
+generate_dna <- function(len=10, single.element=TRUE) {
+  
+  ans <- sample(x=c("A", "C", "G", "T"), size=len, replace = TRUE)
+  #cat("Hello....")
+  
+  if(single.element) {
+   # cat("is it me you are looking for...")
+    ans <- paste(ans, collapse = "")
+  }
+  return(ans)
+}
+```
+
+Functions that could be useful here are `paste()`, `if()`, `cat()`, and `return()`.
+
+```{r}
+generate_dna()
+generate_dna(single.element = FALSE)
+```
+
+```{r}
+paste(c("A", "C", "G"), collapse = "")
+```
+
+> **Q2c.** Finally, create a final version of your function that prints out a FASTA format sequence with an id line indicating the sequence length.
+
+```
+>len9
+CGAAGGCTG
+```
+
+```{r}
+cat("hello \n there")
+#\n means new line
+# \t means tab
+```
+
+```{r}
+generate_dna <- function(len=10, single.element=TRUE) {
+  
+  ans <- sample(x=c("A", "C", "G", "T"), size=len, replace = TRUE)
+  
+  
+  if(single.element) {
+    ans <- paste(ans, collapse = "")
+  }
+  
+##Format as FASTA with an ID line
+## 
+  cat(paste(">len", len, "\n", sep="") )
+  cat(ans)
+  cat("\n")
+  ##
+  
+  return(ans)
+}
+```
+
+```{r}
+x <- generate_dna(9)
+```
+
+##Write a `generate_protein()` function
+
+> **Q3.** Write a function generate_protein() that returns a random peptide/protein sequence of a length specified by the user. For example `generate_protein(6)` might return "WQRTAG".
+
+```{r}
+generate_protein <- function(len) {
+  aa <- c("A", "R", "G", "L", "M", "F", "W", 
+          "K", "Q", "S", "P", "V", "I", "C", 
+          "Y", "H", "R", "N", "D", "T")
+  
+  aa <- sample(x=aa, size=len, replace=TRUE)
+  paste(aa, collapse = "")
+}
+```
+
+```{r}
+generate_protein(5)
+```
+
+## Generate random protein sequence of lenght 6 to 13
+
+> **Q4.** Adapt and use your generate_protein() function to generate a series of random protein sequences ranging from 6 to 13 amino acids in length (one sequence per length). Take advantage of the base R function for() or sapply() so that you do not have to call generate_protein() eight times by hand.
+
+```{r}
+for(l in 6:13) {
+  cat(">", l, "\n", sep="")
+    cat( generate_protein(l), "\n" )
+}
+```
+
+```{r}
+generate_protein(6)
+generate_protein(7)
+generate_protein(8)
+generate_protein(9)
+```
+
+## Are our peptides "unique in nature"?
+
+> **Q5** Take your FASTA-formatted peptides from Q4 and run them as a single BLASTp search against the Non-redundant protein sequences (nr) databaseathttps://blast.ncbi.nlm.nih.gov/. For this question do not restrict the organism (leave the Organism field blank so that the full nr database is searched). 
+
+| Length (aa) | \% identity | \% coverage | Unique? (Y/N) |
+|-------------|-------------|-------------|---------------|
+| 6           | 100         | 100         | N             |
+| 7           | 100         | 100         | N             |
+| 8           | 100         | 88          | Y             |
+| 9           | 100         | 89          | Y             |
+| 10          | 64.29       | 90          | Y             |
+| 11          | 80          | 91          | Y             |
+| 12          | 83.33       | 92          | Y             |
+| 13          | 100         | 62          | Y             |
+
+> **Q5b.** Speculate why very short random peptides are almost always found in nr,while longer ones typically are not. Your answer should refer both to the size of the sequence space (20𝐿for a peptide of length𝐿) and to the size of the known protein universe.
+
+Very short random peptides are almost always found in the nr database because the number of possible sequences is small (20^L), so many organisms will share identical short sequences by chance. As peptide length increases, the number of possible sequences grows exponentially, making it much less likely that a random sequence already exists in the database. Since the known protein universe is finite, longer random peptides are more likely to be unique.
+
+
+## Connecting our findings to immunlogy
+
+> **Q6**: In 3–6 sentences total and using your Q5 data and the reasoning from Q5b, what do you think
+this minimum length is and why might it be a bad design choice for the immune system to present
+very short peptides?
+
+Based on my Q5 results, peptides begin to appear “unique in nature” around lengths of about 8–9 amino acids, suggesting that MHC class II molecules likely bind peptides at least this long. This makes biological sense because very short peptides are extremely common due to the small sequence space (20^L), so they are likely to match many proteins, including the body’s own. If the immune system presented very short peptides, it would struggle to distinguish self from non-self and could trigger inappropriate immune responses. By requiring a minimum peptide length, MHC class II ensures that presented peptides are more specific and less likely to occur by chance. This increases the accuracy of T-cell recognition and helps prevent autoimmunity.
